@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 
 //api calls
 app.get('/', (req, res) => {
-    res.send('Server running successfully. welcome to server');
+    res.render('index.html');
 })
 
 //start server
