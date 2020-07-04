@@ -1,15 +1,16 @@
-const express = require('express');
-const app = express();
-
-const http = require('http').Server(app)
-const io = require('socket.io')(http);
-
 //imports
-const { join } = require('path');
+import express from 'express';
+import mustache from 'mustache-express';
+import { join } from 'path';
+import socketConfig from './sockets';
+import http from 'http';
+
+//server config
+const app = express();
+const server = http.Server(app)
 
 //templating using mustache
-const mustacheExpress = require('mustache-express');
-app.engine('html', mustacheExpress());
+app.engine('html', mustache());
 app.set('view engine', 'mustache');
 app.set('views', join(__dirname, '/views'))
 
@@ -25,6 +26,9 @@ app.get('/', (req, res) => {
 })
 
 //start server
-http.listen(PORT, () => {
-    console.log(`SERVER LISTENING ON port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`SERVER LISTENING ON PORT ${PORT}`);
 })
+
+//running sockets
+socketConfig.init(server);
