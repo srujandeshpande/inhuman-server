@@ -4,7 +4,7 @@ import mustache from 'mustache-express';
 import { join } from 'path';
 import socketConfig from './sockets';
 import http from 'http';
-
+import socketio from 'socket.io';
 //server config
 const app = express();
 const server = http.Server(app)
@@ -28,7 +28,11 @@ app.get('/', (req, res) => {
 //start server
 server.listen(PORT, () => {
     console.log(`SERVER LISTENING ON PORT ${PORT}`);
+    
 })
 
+
 //running sockets
-socketConfig.init(server);
+const io = socketio(server);
+var sockets = new socketConfig(io)
+sockets.init(server);
