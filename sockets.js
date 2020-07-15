@@ -8,10 +8,18 @@ class socketConfig{
         this.io = io;
     }
     init(){
-        //console.log("HERE")
         this.io.on('connection', (socket) => {
-            //console.log(`SOCKET CONNECT ID:${socket.id}`);
+            console.log(`SOCKET CONNECT ID:${socket.id}`);
             this.clients[socket.id] = socket;
+
+
+            socket.on('lobby', (data) => {
+                console.log(`socket ${socket.id} joined and game_id is:`,data.game_id, data.name)
+                socket.join(data.game_id);
+                this.handleRoom(data.game_id, socket);
+            });
+
+
             socket.on('room', (data) => {
                 console.log('game_id is:',data.game_id)
                 socket.join(data.game_id);
@@ -34,13 +42,13 @@ class socketConfig{
                 var master = this.getMaster(data.game_id);
                 console.log("MASTER IS",master)
                 master = this.clients[master]
-                
-                this.io.to(master.id).emit("white-card",data)    
+
+                this.io.to(master.id).emit("white-card",data)
             })
-            
+
             socket.on('winner',(game_id,data)=>{
                 this.io.to(master.id).emit("winner",data)
-            }) 
+            })
 
             socket.on('next-turn',(game_id,socket)=>{
                 this.handleAssignTurn(socket,game_id)
@@ -71,7 +79,7 @@ class socketConfig{
         var player = this.getPlayer(socket,game_id);
         console.log("here",player)
         if(player){
-            
+
             if(this.players[game_id][player].turn == false)
                 this.players[game_id][player].turn = true;
             else{
@@ -79,24 +87,24 @@ class socketConfig{
                 player = this.getNextPlayer(socket,game_id);
                 this.players[game_id][player].turn = true;
             }
-        }   
+        }
         console.log('assigning turn to ',this.players[game_id][player])
         //console.log("HERE NEAR EMITING PLAYER STATUS")
         this.io.sockets.in(game_id).emit('player-status',{players:this.players[game_id]})
     }
-    
+
     getPlayer(socket,game_id){
         var i = 0;
         var ans = null;
         //console.log("PLAYERS LIST IOS",this.players)
         for(i;i<this.players[game_id].length;i++){
             if (this.players[game_id][i].socket == socket.id)
-            {   
-                
+            {
+
                 ans =  i
             }
         }
-        
+
         return ans;
     }
 
@@ -106,7 +114,7 @@ class socketConfig{
         //console.log("PLAYERS LIST IOS",this.players)
         for(i;i<this.players[game_id].length;i++){
             if (this.players[game_id][i].socket == socket.id)
-            {   
+            {
                 if(i == this.players[game_id].length-1){
                     ans = 0;
                 }
@@ -129,7 +137,7 @@ class socketConfig{
         }
         if(this.players[game_id]){
            this.players[game_id].push(player);
-           
+
         }
         else{
             player.host = true;
@@ -153,7 +161,7 @@ class socketConfig{
 
     handleReady(game_id, socket) {
         console.log(`Game ${game_id} started by ${socket.id}`);
-        
+
         this.games[game_id].in_progress = true;
         //console.log("GAMES:",this.games)
         this.io.sockets.in(game_id).emit('start-game');
