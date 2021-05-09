@@ -28,11 +28,14 @@ app.get('/', (req, res) => {
 //start server
 server.listen(PORT, () => {
     console.log(`SERVER LISTENING ON PORT ${PORT}`);
-    
 })
 
 
 //running sockets
-const io = socketio(server);
+const io = socketio(server, {
+    cors: {
+        origin: '*',
+    }
+});
 var sockets = new socketConfig(io)
 sockets.init(server);
